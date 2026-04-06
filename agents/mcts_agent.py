@@ -64,8 +64,7 @@ class MCTSNode:
     def backup(self, value):
         self.visit_count += 1
         self.value_sum += value
-        
-        # Perspective flip: What is good for me is bad for my opponent
+
         if self.parent is not None:
             self.parent.backup(1.0 - value)
 
