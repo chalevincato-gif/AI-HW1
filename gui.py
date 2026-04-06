@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 from dlgo.goboard import GameState, Move
 from dlgo.gotypes import Player, Point
 from agents.mcts_agent import MCTSAgent
@@ -16,6 +17,8 @@ class GoGUI:
         # Setup the canvas
         self.canvas = tk.Canvas(master, width=CANVAS_SIZE, height=CANVAS_SIZE, bg="#DCB35C")
         self.canvas.pack()
+        self.pass_btn = tk.Button(master, text="Pass Turn (Human)", command=self.human_pass, font=("Arial", 12))
+        self.pass_btn.pack(pady=10)
         
         # Bind left mouse click to our handler
         self.canvas.bind("<Button-1>", self.handle_click)
@@ -48,6 +51,45 @@ class GoGUI:
                     color = "black" if stone == Player.black else "white"
                     radius = CELL_SIZE * 0.4
                     self.canvas.create_oval(x - radius, y - radius, x + radius, y + radius, fill=color)
+
+    def check_game_over(self):
+        """Checks if the game has ended, calculates the winner, and shows a popup."""
+        if self.game_state.is_over():
+            winner = self.game_state.winner()
+            if winner == Player.black:
+                result = "Black (Human) Wins!"
+            elif winner == Player.white:
+                result = "White (AI) Wins!"
+            else:
+                result = "It's a Draw!"
+            
+            # Show a pop-up alert on the screen
+            messagebox.showinfo("Game Over", f"The game has ended.\nResult: {result}")
+            return True
+        return False
+
+    def trigger_ai(self):
+        """Forces the MCTS agent to calculate and play its turn."""
+        self.master.update() # Force UI refresh before AI freezes the thread
+        print("AI is thinking...")
+        
+        ai_move = self.agent.select_move(self.game_state)
+        self.game_state = self.game_state.apply_move(ai_move)
+        self.draw_board()
+        self.check_game_over()
+
+    def human_pass(self):
+        """Allows the human to pass their turn when they have no moves."""
+        if self.game_state.is_over():
+            return
+            
+        print("Human passes.")
+        move = Move.pass_turn()
+        self.game_state = self.game_state.apply_move(move)
+        self.draw_board()
+        
+        if not self.check_game_over():
+            self.trigger_ai()
 
     def handle_click(self, event):
         if self.game_state.is_over():
