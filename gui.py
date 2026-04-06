@@ -14,18 +14,14 @@ class GoGUI:
         self.master = master
         self.master.title("5x5 Go AI (Human vs MCTS)")
         
-        # Setup the canvas
         self.canvas = tk.Canvas(master, width=CANVAS_SIZE, height=CANVAS_SIZE, bg="#DCB35C")
         self.canvas.pack()
         
-        # Add the Pass button for the human
         self.pass_btn = tk.Button(master, text="Pass Turn (Human)", command=self.human_pass, font=("Arial", 12))
         self.pass_btn.pack(pady=10)
         
-        # Bind left mouse click
         self.canvas.bind("<Button-1>", self.handle_click)
         
-        # Initialize the engine and AI
         self.game_state = GameState.new_game(BOARD_SIZE)
         self.agent = MCTSAgent(num_rounds=1000, temperature=1.0)
         
@@ -34,14 +30,12 @@ class GoGUI:
     def draw_board(self):
         self.canvas.delete("all")
         
-        # Draw grid lines
         for i in range(BOARD_SIZE):
             x = MARGIN + i * CELL_SIZE
             self.canvas.create_line(x, MARGIN, x, CANVAS_SIZE - MARGIN, width=2)
             y = MARGIN + i * CELL_SIZE
             self.canvas.create_line(MARGIN, y, CANVAS_SIZE - MARGIN, y, width=2)
-            
-        # Draw stones based on internal board state
+
         for r in range(1, BOARD_SIZE + 1):
             for c in range(1, BOARD_SIZE + 1):
                 stone = self.game_state.board.get(Point(row=r, col=c))
@@ -54,7 +48,6 @@ class GoGUI:
                     self.canvas.create_oval(x - radius, y - radius, x + radius, y + radius, fill=color)
 
     def check_game_over(self):
-        """Checks if the game has ended and forces a popup to the front."""
         if self.game_state.is_over():
             winner = self.game_state.winner()
             if winner == Player.black:
@@ -69,7 +62,6 @@ class GoGUI:
         return False
 
     def trigger_ai(self):
-        """Forces the MCTS agent to calculate and play its turn."""
         self.master.update() 
         print("AI is thinking...")
         
@@ -86,7 +78,6 @@ class GoGUI:
         self.check_game_over()
 
     def human_pass(self):
-        """Allows the human to pass their turn using the button."""
         if self.game_state.is_over():
             return
             
